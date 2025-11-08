@@ -3,7 +3,7 @@
  */
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:3000', // Cambiar por la URL real en producción
+  apiUrl: 'https://3.134.5.42/vhs-api', // URL del backend FastAPI a través de Apache
   apiVersion: 'v1',
   enableLogging: false,
   requestTimeout: 120000, // 2 minutos
