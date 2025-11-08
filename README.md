@@ -14,6 +14,7 @@
 - [Instalación](#-instalación)
 - [Configuración](#️-configuración)
 - [Uso](#-uso)
+- [Deployment en AWS EC2](#-deployment-en-aws-ec2)
 - [Arquitectura](#-arquitectura)
 - [Testing](#-testing)
 - [Decisiones Técnicas](#-decisiones-técnicas)
@@ -23,6 +24,7 @@
 ## ✨ Características
 
 ### Funcionalidades Core
+
 - ✅ **Subida de radiografías** con drag & drop
 - ✅ **Análisis VHS automatizado** mediante backend
 - ✅ **Visualización de resultados** con métricas detalladas
@@ -32,6 +34,7 @@
 - ✅ **Descarga de overlay** como imagen PNG
 
 ### Características Técnicas
+
 - ✅ **Angular 19** con standalone components
 - ✅ **Signals** para manejo de estado reactivo
 - ✅ **TypeScript** fuertemente tipado
@@ -65,6 +68,7 @@ npm install
 ```
 
 Este comando instalará:
+
 - Angular 19 y sus dependencias
 - Angular Material 19
 - TailwindCSS 3.4
@@ -85,6 +89,7 @@ Deberías ver Angular CLI 19.x y Angular 19.x
 Edita el archivo de environment según tu entorno:
 
 **Desarrollo**: `src/environments/environment.development.ts`
+
 ```typescript
 export const environment = {
   production: false,
@@ -98,6 +103,7 @@ export const environment = {
 ```
 
 **Producción**: `src/environments/environment.ts`
+
 ```typescript
 export const environment = {
   production: true,
@@ -126,15 +132,13 @@ ng serve --open
 
 La aplicación estará disponible en: `http://localhost:4200`
 
-### Producción
+### Producción Local
 
 ```bash
 # Build de producción
-npm run build
-# o
-ng build
+npm run build:prod
 
-# Los archivos compilados estarán en dist/
+# Los archivos compilados estarán en dist/vhs-analyzer-frontend/browser/
 ```
 
 ### Testing
@@ -148,6 +152,45 @@ ng test
 # Ejecutar tests con cobertura
 ng test --code-coverage
 ```
+
+## 🚀 Deployment en AWS EC2
+
+### Guía Rápida
+
+Para deployar en AWS EC2 Ubuntu, sigue estos pasos:
+
+1. **Lee la guía completa**: [`DEPLOYMENT.md`](DEPLOYMENT.md)
+2. **Sigue el checklist**: [`DEPLOYMENT_CHECKLIST.md`](DEPLOYMENT_CHECKLIST.md)
+3. **Revisa la arquitectura**: [`ARCHITECTURE.md`](ARCHITECTURE.md)
+
+### Scripts Disponibles
+
+- `setup-ec2.sh` - Configuración inicial de la instancia EC2
+- `deploy.sh` - Script de deployment automático
+- `create-backend-service.sh` - Crear servicio systemd para el backend
+- `test-deployment.sh` - Probar que el deployment funcione
+
+### Pasos Resumidos
+
+```bash
+# 1. En EC2, configurar el servidor
+./setup-ec2.sh
+
+# 2. Clonar el proyecto
+git clone tu-repositorio.git
+cd tu-repositorio
+
+# 3. Actualizar variables de entorno
+# Edita src/environments/environment.ts con tu IP de EC2
+
+# 4. Deployar
+./deploy.sh
+
+# 5. Probar
+./test-deployment.sh TU_IP_EC2
+```
+
+Ver documentación completa en [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## 🏗️ Arquitectura
 
@@ -254,6 +297,7 @@ open coverage/vhs-analyzer-frontend/index.html
 ### Modo Claro/Oscuro
 
 El tema se gestiona mediante:
+
 - **Signal reactivo** en `ThemeService`
 - **localStorage** para persistencia
 - **Clase CSS** `dark` en el `<html>`
@@ -317,6 +361,7 @@ xl: 1280px
 ### Headers de Seguridad
 
 Los interceptores añaden:
+
 - Manejo de rate limiting (429)
 - Timeout de peticiones (120s)
 - Retry automático para 503
@@ -358,6 +403,7 @@ Error: No se pudo conectar con el servidor
 ```
 
 **Solución**:
+
 1. Verificar que el backend esté corriendo: `http://localhost:8000/health`
 2. Revisar la URL en `environment.development.ts`
 3. Verificar CORS en el backend
@@ -369,6 +415,7 @@ Error: Cannot find module 'tailwindcss'
 ```
 
 **Solución**:
+
 ```bash
 npm install -D tailwindcss postcss autoprefixer
 ```
@@ -383,7 +430,7 @@ NullInjectorError: No provider for HttpClient
 
 ```typescript
 TestBed.configureTestingModule({
-  imports: [HttpClientTestingModule]
+  imports: [HttpClientTestingModule],
 });
 ```
 
@@ -424,6 +471,7 @@ Este proyecto es parte del sistema VHS Analyzer para uso educativo y profesional
 ## 📞 Soporte
 
 Para reportar bugs o solicitar features:
+
 - Crear un issue en el repositorio
 - Contactar al equipo de desarrollo
 
