@@ -1,0 +1,35 @@
+/* Estilos adicionales para el componente de Upload */
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+/* Animación para drag over */
+.border-dashed {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mejora de accesibilidad para el input file oculto */
+input[type='file'] {
+  &:focus + button {
+    @apply ring-2 ring-primary-500 ring-offset-2;
+  }
+}
+
+/* Skeleton loading para preview */
+.preview-skeleton {
+  @apply animate-pulse bg-gray-200 dark:bg-gray-700;
+}
+
+/* Transiciones suaves */
+mat-card {
+  transition: all 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

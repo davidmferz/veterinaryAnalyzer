@@ -1,0 +1,82 @@
+<div class="relative bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
+  <!-- Loading state -->
+  @if (isLoading()) {
+  <div
+    class="absolute inset-0 flex items-center justify-center z-10 bg-gray-100 dark:bg-gray-900"
+  >
+    <div class="text-center">
+      <div
+        class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"
+      ></div>
+      <p class="mt-4 text-gray-600 dark:text-gray-400">Cargando imagen...</p>
+    </div>
+  </div>
+  }
+
+  <!-- Canvas container -->
+  <div
+    #container
+    class="relative w-full min-h-[400px] md:min-h-[500px] overflow-hidden"
+    [class.cursor-grab]="!isDragging()"
+    [class.cursor-grabbing]="isDragging()"
+    (mousedown)="onMouseDown($event)"
+    (mousemove)="onMouseMove($event)"
+    (mouseup)="onMouseUp()"
+    (mouseleave)="onMouseUp()"
+    (touchstart)="onTouchStart($event)"
+    (touchmove)="onTouchMove($event)"
+    (touchend)="onTouchEnd()"
+    (wheel)="onWheel($event)"
+  >
+    <canvas #canvas class="w-full h-full"></canvas>
+  </div>
+
+  <!-- Controls -->
+  <div class="absolute bottom-4 right-4 flex flex-col gap-2 z-20">
+    <button
+      mat-mini-fab
+      color="primary"
+      (click)="zoomIn()"
+      matTooltip="Acercar"
+      aria-label="Acercar"
+    >
+      <mat-icon>add</mat-icon>
+    </button>
+
+    <button
+      mat-mini-fab
+      color="primary"
+      (click)="zoomOut()"
+      matTooltip="Alejar"
+      aria-label="Alejar"
+    >
+      <mat-icon>remove</mat-icon>
+    </button>
+
+    <button
+      mat-mini-fab
+      color="primary"
+      (click)="resetView()"
+      matTooltip="Restablecer vista"
+      aria-label="Restablecer vista"
+    >
+      <mat-icon>center_focus_strong</mat-icon>
+    </button>
+  </div>
+
+  <!-- Zoom indicator -->
+  <div
+    class="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium z-20"
+  >
+    {{ getZoomPercentage() }}%
+  </div>
+
+  <!-- Instructions overlay (solo visible al principio) -->
+  @if (!isDragging() && scale() === 1) {
+  <div
+    class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm z-20 animate-pulse-soft"
+  >
+    Arrastra para mover • Rueda del mouse para zoom
+  </div>
+  }
+</div>

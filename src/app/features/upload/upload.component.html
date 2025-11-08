@@ -1,0 +1,211 @@
+<div class="max-w-4xl mx-auto p-4 md:p-6">
+  <div class="text-center mb-8">
+    <h1
+      class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2"
+    >
+      Análisis VHS Radiográfico
+    </h1>
+    <p class="text-gray-600 dark:text-gray-400">
+      Sube una radiografía torácica lateral para calcular el Vertebral Heart
+      Score
+    </p>
+  </div>
+
+  @if (isAnalyzing()) {
+  <mat-card class="card">
+    <mat-card-content>
+      <app-loading-spinner
+        [diameter]="60"
+        message="Analizando radiografía... Esto puede tomar unos momentos"
+      />
+    </mat-card-content>
+  </mat-card>
+  } @else if (error() && !selectedFile()) {
+  <mat-card class="card">
+    <mat-card-content>
+      <app-error-message
+        [title]="'Error en el análisis'"
+        [message]="error()!"
+        [showRetry]="false"
+        (retry)="retry()"
+      />
+    </mat-card-content>
+  </mat-card>
+  } @else if (!selectedFile()) {
+  <mat-card class="card">
+    <mat-card-content>
+      <div
+        [class]="
+          'border-2 border-dashed rounded-xl p-8 md:p-12 text-center transition-all duration-200 ' +
+          (isDragging()
+            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10'
+            : 'border-gray-300 dark:border-gray-600')
+        "
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+      >
+        <mat-icon
+          class="!w-16 !h-16 !text-6xl text-gray-400 dark:text-gray-500 mb-4"
+        >
+          {{ isDragging() ? 'file_download' : 'cloud_upload' }}
+        </mat-icon>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          {{
+            isDragging()
+              ? '¡Suelta el archivo aquí!'
+              : 'Arrastra tu radiografía aquí'
+          }}
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+          o haz click en el botón para seleccionar
+        </p>
+        <input
+          type="file"
+          #fileInput
+          accept=".jpg,.jpeg,.png"
+          class="hidden"
+          (change)="onFileSelected($event)"
+        />
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="fileInput.click()"
+          class="!px-8 !py-2"
+        >
+          <mat-icon class="mr-2">add_photo_alternate</mat-icon>
+          Seleccionar archivo
+        </button>
+        <div class="mt-6 text-sm text-gray-500 dark:text-gray-400">
+          <p>Formatos aceptados: {{ ALLOWED_TYPES }}</p>
+          <p>Tamaño máximo: {{ MAX_SIZE_MB }}MB</p>
+        </div>
+        @if (validationErrors().length > 0) {
+        <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+          @for (err of validationErrors(); track err) {
+          <p class="text-sm text-red-600 dark:text-red-400">{{ err }}</p>
+          }
+        </div>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+  } @else {
+  <mat-card class="card">
+    <mat-card-content>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Vista previa
+          </h3>
+          @if (previewUrl()) {
+          <div
+            class="relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800"
+          >
+            <img
+              [src]="previewUrl()!"
+              [alt]="selectedFile()!.name"
+              class="w-full h-auto max-h-96 object-contain"
+            />
+          </div>
+          }
+          <div
+            class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+          >
+            <div class="flex-1 min-w-0">
+              <p
+                class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate"
+              >
+                {{ selectedFile()!.name }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ formatFileSize(selectedFile()!.size) }}
+              </p>
+            </div>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="clearFile()"
+              aria-label="Eliminar archivo"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="space-y-6">
+          <div>
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
+            >
+              Opciones de análisis
+            </h3>
+            <div class="space-y-4">
+              <div
+                class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+              >
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-gray-100">
+                    Incluir overlay visual
+                  </p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Genera imagen con anotaciones de medición
+                  </p>
+                </div>
+                <mat-slide-toggle
+                  [(ngModel)]="includeOverlay"
+                  color="primary"
+                ></mat-slide-toggle>
+              </div>
+              <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div class="flex">
+                  <mat-icon class="text-blue-600 dark:text-blue-400 mr-2"
+                    >info</mat-icon
+                  >
+                  <div class="text-sm text-blue-800 dark:text-blue-300">
+                    <p class="font-medium mb-1">Sobre el análisis VHS</p>
+                    <p class="text-xs">
+                      El análisis detecta automáticamente las vértebras y el
+                      corazón para calcular el score VHS (Vertebral Heart
+                      Score), una medida estándar en cardiología veterinaria.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          @if (error()) {
+          <div
+            class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
+          >
+            <div class="flex">
+              <mat-icon class="text-red-600 dark:text-red-400 mr-2"
+                >error</mat-icon
+              >
+              <div class="flex-1">
+                <p class="text-sm font-medium text-red-800 dark:text-red-300">
+                  {{ error() }}
+                </p>
+              </div>
+            </div>
+          </div>
+          }
+          <div class="flex gap-3">
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="analyzeRadiograph()"
+              class="flex-1 !py-3"
+            >
+              <mat-icon class="mr-2">analytics</mat-icon>
+              Analizar radiografía
+            </button>
+            <button mat-stroked-button (click)="clearFile()" class="!py-3">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  }
+</div>

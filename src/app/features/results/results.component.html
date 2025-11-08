@@ -1,0 +1,279 @@
+<div class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+  <!-- Header con acciones -->
+  <div
+    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+  >
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        Resultados del Análisis
+      </h1>
+      <p class="text-gray-600 dark:text-gray-400">
+        Procesado en {{ formatProcessingTime(result().processing_time_ms) }}
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      @if (result().overlay_image) {
+      <button
+        mat-stroked-button
+        (click)="downloadOverlay()"
+        matTooltip="Descargar imagen overlay"
+      >
+        <mat-icon>download</mat-icon>
+        Overlay
+      </button>
+      }
+
+      <button
+        mat-stroked-button
+        (click)="exportResults()"
+        matTooltip="Exportar resultados como JSON"
+      >
+        <mat-icon>file_download</mat-icon>
+        Exportar
+      </button>
+    </div>
+  </div>
+
+  <!-- Grid principal -->
+  <div class="grid lg:grid-cols-3 gap-6">
+    <!-- Columna izquierda: Métricas principales -->
+    <div class="lg:col-span-1 space-y-6">
+      <!-- VHS Score Card -->
+      <mat-card class="card">
+        <mat-card-content class="text-center p-6">
+          <div class="mb-2">
+            <mat-icon
+              class="!w-12 !h-12 !text-5xl text-primary-600 dark:text-primary-400"
+            >
+              favorite
+            </mat-icon>
+          </div>
+          <h2
+            class="text-gray-600 dark:text-gray-400 text-sm uppercase tracking-wide mb-2"
+          >
+            VHS Score
+          </h2>
+          <p class="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            {{ vhsScore().toFixed(1) }}
+          </p>
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            <p>
+              Eje largo: {{ result().vhs_measurements.long_axis.toFixed(1) }}v
+            </p>
+            <p>
+              Eje corto: {{ result().vhs_measurements.short_axis.toFixed(1) }}v
+            </p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Clasificación Card -->
+      <mat-card class="card">
+        <mat-card-content class="p-6">
+          <h3
+            class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
+          >
+            Clasificación Clínica
+          </h3>
+
+          <div class="space-y-3">
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Estado
+              </p>
+              <div
+                [class]="getClassificationColor()"
+                class="inline-flex items-center px-3 py-2 rounded-lg font-medium"
+              >
+                <mat-icon class="!w-5 !h-5 mr-2">{{
+                  getClassificationIcon()
+                }}</mat-icon>
+                {{ getClassificationLabel() }}
+              </div>
+            </div>
+
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Severidad
+              </p>
+              <div
+                [class]="getSeverityColor()"
+                class="inline-flex items-center px-3 py-2 rounded-lg font-medium"
+              >
+                {{ getSeverityLabel() }}
+              </div>
+            </div>
+
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Confianza
+              </p>
+              <p class="text-gray-900 dark:text-gray-100 font-medium">
+                {{ getConfidenceLabel() }}
+              </p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Tabla de Mediciones -->
+      <mat-card class="card">
+        <mat-card-content class="p-6">
+          <h3
+            class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
+          >
+            Mediciones Detalladas
+          </h3>
+
+          <table
+            mat-table
+            [dataSource]="[
+              { metric: 'VHS Score', value: vhsScore().toFixed(2) + 'v' },
+              {
+                metric: 'Eje largo',
+                value: result().vhs_measurements.long_axis.toFixed(2) + 'v'
+              },
+              {
+                metric: 'Eje corto',
+                value: result().vhs_measurements.short_axis.toFixed(2) + 'v'
+              },
+              {
+                metric: 'Vértebras (largo)',
+                value: result().vhs_measurements.long_axis_vertebrae.toFixed(2)
+              },
+              {
+                metric: 'Vértebras (corto)',
+                value: result().vhs_measurements.short_axis_vertebrae.toFixed(2)
+              }
+            ]"
+            class="w-full"
+          >
+            <ng-container matColumnDef="metric">
+              <th mat-header-cell *matHeaderCellDef class="!font-semibold">
+                Métrica
+              </th>
+              <td
+                mat-cell
+                *matCellDef="let element"
+                class="!text-gray-900 dark:!text-gray-100"
+              >
+                {{ element.metric }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="value">
+              <th
+                mat-header-cell
+                *matHeaderCellDef
+                class="!font-semibold text-right"
+              >
+                Valor
+              </th>
+              <td
+                mat-cell
+                *matCellDef="let element"
+                class="!text-gray-900 dark:!text-gray-100 text-right font-mono"
+              >
+                {{ element.value }}
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Columna derecha: Overlay y notas -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Imagen Overlay con Zoom/Pan -->
+      @if (result().overlay_image) {
+      <mat-card class="card">
+        <mat-card-content class="p-0">
+          <app-image-viewer
+            [imageBase64]="result().overlay_image!"
+            [alt]="'Overlay VHS'"
+          />
+        </mat-card-content>
+      </mat-card>
+      }
+
+      <!-- Recomendación Clínica -->
+      <mat-card class="card">
+        <mat-card-content class="p-6">
+          <div class="flex items-start">
+            <mat-icon class="text-blue-600 dark:text-blue-400 mr-3 !w-6 !h-6">
+              description
+            </mat-icon>
+            <div class="flex-1">
+              <h3
+                class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2"
+              >
+                Recomendación Clínica
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300">
+                {{ result().clinical_classification.recommendation }}
+              </p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Notas Clínicas -->
+      @if (result().clinical_classification.clinical_notes.length > 0) {
+      <mat-card class="card">
+        <mat-card-content class="p-6">
+          <h3
+            class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
+          >
+            Notas Clínicas
+          </h3>
+
+          <ul class="space-y-2">
+            @for (note of result().clinical_classification.clinical_notes; track
+            note) {
+            <li class="flex items-start">
+              <mat-icon
+                class="text-gray-400 dark:text-gray-500 mr-2 !w-5 !h-5 mt-0.5"
+              >
+                chevron_right
+              </mat-icon>
+              <span class="text-gray-700 dark:text-gray-300">{{ note }}</span>
+            </li>
+            }
+          </ul>
+        </mat-card-content>
+      </mat-card>
+      }
+
+      <!-- Puntos clave detectados -->
+      <mat-card class="card">
+        <mat-card-content class="p-6">
+          <h3
+            class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2"
+          >
+            Información Técnica
+          </h3>
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            <p>
+              <strong>Puntos clave detectados:</strong>
+              {{ result().keypoints.length }}
+            </p>
+            <p>
+              <strong>Tiempo de procesamiento:</strong>
+              {{ formatProcessingTime(result().processing_time_ms) }}
+            </p>
+            @if (result().metadata.model_version) {
+            <p>
+              <strong>Versión del modelo:</strong>
+              {{ result().metadata.model_version }}
+            </p>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
