@@ -3,7 +3,7 @@
  */
 export const environment = {
   production: true,
-  apiUrl: 'http://3.134.5.42:3001', // URL del backend Node.js
+  apiUrl: 'https://3.134.5.42/vhs-api', // URL del backend a través de proxy Apache
   apiVersion: 'v1',
   enableLogging: false,
   requestTimeout: 120000, // 2 minutos
